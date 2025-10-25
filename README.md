@@ -1,6 +1,6 @@
-# VYX Network Documentation
+# Vyx Network Documentation
 
-Complete documentation for VYX Network residential proxy service.
+Complete documentation for Vyx Network residential proxy service.
 
 ## Getting Started
 

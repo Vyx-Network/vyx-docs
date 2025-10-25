@@ -1,12 +1,12 @@
 # Configuration
 
-Configure VYX Network proxies to match your specific requirements.
+Configure Vyx Network proxies to match your specific requirements.
 
 import { Tabs, Callout } from 'nextra/components'
 
 ## Proxy Endpoints
 
-VYX Network provides residential proxy endpoints:
+Vyx Network provides residential proxy endpoints:
 
 | Endpoint | Protocol | Port | Use Case |
 |----------|----------|------|----------|
@@ -191,7 +191,7 @@ const config = {
   headers: {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
     'Accept-Language': 'en-US,en;q=0.9',
-    'X-VYX-Country': 'US'
+    'X-Vyx-Country': 'US'
   }
 };
 
@@ -258,9 +258,9 @@ Disabling SSL verification in production is a security risk. Only use this in de
 Store credentials in environment variables for security:
 
 ```bash
-export VYX_USERNAME="your-username"
-export VYX_PASSWORD="your-password"
-export VYX_PROXY="proxy.vyx.network:8081"
+export Vyx_USERNAME="your-username"
+export Vyx_PASSWORD="your-password"
+export Vyx_PROXY="proxy.vyx.network:8081"
 ```
 
 Use in your code:
@@ -269,9 +269,9 @@ Use in your code:
 import os
 import requests
 
-username = os.getenv('VYX_USERNAME')
-password = os.getenv('VYX_PASSWORD')
-proxy_url = os.getenv('VYX_PROXY')
+username = os.getenv('Vyx_USERNAME')
+password = os.getenv('Vyx_PASSWORD')
+proxy_url = os.getenv('Vyx_PROXY')
 
 proxies = {
     'http': f'http://{username}:{password}@{proxy_url}',

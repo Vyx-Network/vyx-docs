@@ -15,7 +15,7 @@ const navbar = (
 )
 const footer = <Footer>{new Date().getFullYear()} © Vyx Network.</Footer>
 
-export default async function RootLayout({children}) {
+export default async function RootLayout({children}: { children: React.ReactNode }) {
     return (
         <html lang="en" dir="ltr" suppressHydrationWarning>
         <Head>
@@ -25,7 +25,7 @@ export default async function RootLayout({children}) {
         <Layout
             navbar={navbar}
             pageMap={await getPageMap()}
-            docsRepositoryBase="https://github.com/Vyx-Network/vyx-docs"
+            docsRepositoryBase="https://github.com/Vyx-Network/vyx-docs/tree/main"
             footer={footer}
         >
             {children}

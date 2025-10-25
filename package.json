@@ -1,23 +1,25 @@
 {
   "name": "vyx-docs",
   "version": "1.0.0",
-  "description": "VYX Network Documentation",
+  "description": "Vyx Network Documentation",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "postbuild": "pagefind --site .next/server/app --output-path public/_pagefind",
     "start": "next start"
   },
   "dependencies": {
-    "next": "15.5.6",
+    "next": "16.0.0",
     "nextra": "^4.6.0",
     "nextra-theme-docs": "^4.6.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
   },
   "devDependencies": {
-    "@types/node": "^24.8.1",
+    "@types/node": "^24.9.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "pagefind": "^1.4.0",
     "typescript": "^5"
   }
 }
