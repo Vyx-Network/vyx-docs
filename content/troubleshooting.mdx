@@ -1,0 +1,430 @@
+# Troubleshooting
+
+Common issues and solutions for VYX Network proxies.
+
+import { Callout, Steps } from 'nextra/components'
+
+## Connection Issues
+
+### Proxy Connection Refused
+
+**Symptoms**: Connection timeout or "connection refused" errors
+
+**Common Causes**:
+1. Incorrect proxy address or port
+2. Invalid API key
+3. Account suspended or out of credits
+
+**Solutions**:
+
+<Steps>
+
+### Verify Proxy Details
+
+Check that you're using the correct endpoint and port:
+- HTTP: `proxy.vyx.network:8081`
+- SOCKS5: `proxy.vyx.network:1080`
+
+### Validate API Key
+
+Test your API key:
+```bash
+curl -x http://user:YOUR_API_KEY@proxy.vyx.network:8081 https://api.ipify.org
+```
+
+### Check Account Status
+
+Log in to your [dashboard](https://vyx.network/dashboard) and verify:
+- Account is active
+- Sufficient credits/bandwidth
+- No usage restrictions
+
+</Steps>
+
+<Callout type="info">
+Remember: Username can be anything, password must be your API key.
+</Callout>
+
+### Authentication Failed (407)
+
+**Error**: `407 Proxy Authentication Required`
+
+**Solutions**:
+
+```python
+# ❌ Wrong - using incorrect credentials
+proxies = {'http': 'http://wrong:credentials@proxy.vyx.network:8081'}
+
+# ✅ Correct - username can be anything, password is API key
+proxies = {'http': 'http://myusername:YOUR_API_KEY@proxy.vyx.network:8081'}
+```
+
+**Common mistakes**:
+- Swapping username and API key
+- Special characters in API key not URL-encoded
+- Extra spaces in credentials
+
+**URL encoding special characters**:
+```python
+from urllib.parse import quote
+
+api_key = "key@with#special$chars"
+encoded_key = quote(api_key, safe='')
+proxy = f'http://user:{encoded_key}@proxy.vyx.network:8081'
+```
+
+## Performance Issues
+
+### Slow Connection Speed
+
+**Symptoms**: Requests taking longer than expected
+
+**Debugging**:
+
+```python
+import requests
+import time
+
+proxies = {'http': 'http://user:YOUR_API_KEY@proxy.vyx.network:8081'}
+
+start = time.time()
+response = requests.get('https://example.com', proxies=proxies)
+elapsed = time.time() - start
+
+print(f"Request took {elapsed:.2f} seconds")
+print(f"Status: {response.status_code}")
+```
+
+**Solutions**:
+
+1. **Choose closer locations**: Select proxies geographically closer to target
+2. **Check network**: Test your own internet connection
+3. **Reduce timeout**: Set appropriate timeout values
+4. **Minimize request size**: Reduce payload and response data
+
+```python
+# Set timeout to fail fast
+response = requests.get(
+    'https://example.com',
+    proxies=proxies,
+    timeout=10  # 10 seconds
+)
+```
+
+### High Latency
+
+**Check proxy latency**:
+
+```bash
+# Test connection time
+time curl -x http://user:YOUR_API_KEY@proxy.vyx.network:8081 -w '\nTime: %{time_total}s\n' https://api.ipify.org
+```
+
+**Solutions**:
+- Select proxy location closer to target
+- Optimize request payload and headers
+- Contact support for performance optimization
+
+## Request Failures
+
+### Getting Blocked (403/429)
+
+**Symptoms**: `403 Forbidden` or `429 Too Many Requests`
+
+**Solutions**:
+
+<Steps>
+
+### Implement Proper Headers
+
+Add realistic browser headers:
+```python
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    'Accept-Language': 'en-US,en;q=0.5'
+}
+response = requests.get(url, proxies=proxies, headers=headers)
+```
+
+### Implement Rate Limiting
+
+Add delays between requests:
+```python
+import time
+
+for url in urls:
+    response = requests.get(url, proxies=proxies)
+    time.sleep(2)  # 2 second delay
+```
+
+### Rotate User Agents
+
+Vary your User-Agent header:
+```python
+import random
+
+user_agents = [
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36'
+]
+
+headers = {'User-Agent': random.choice(user_agents)}
+response = requests.get(url, proxies=proxies, headers=headers)
+```
+
+### Use Sticky Sessions
+
+Keep same IP for related requests:
+```python
+# Create session with specific ID
+session_id = "shopping123"
+proxies = {
+    'http': f'http://user-session-{session_id}:YOUR_API_KEY@proxy.vyx.network:8081'
+}
+```
+
+</Steps>
+
+### SSL Certificate Errors
+
+**Error**: `SSLError: certificate verify failed`
+
+**Solutions**:
+
+```python
+import requests
+import urllib3
+
+# Option 1: Update certificates (recommended)
+import certifi
+response = requests.get(url, proxies=proxies, verify=certifi.where())
+
+# Option 2: Disable verification (development only)
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+response = requests.get(url, proxies=proxies, verify=False)
+```
+
+<Callout type="warning">
+Never disable SSL verification in production!
+</Callout>
+
+### Timeout Errors
+
+**Error**: `ReadTimeout` or `ConnectTimeout`
+
+**Solutions**:
+
+```python
+from requests.exceptions import Timeout
+
+try:
+    response = requests.get(
+        url,
+        proxies=proxies,
+        timeout=(5, 30)  # (connect timeout, read timeout)
+    )
+except Timeout:
+    print("Request timed out, retrying...")
+    # Implement retry logic
+```
+
+## Session Management Issues
+
+### Session Not Persisting
+
+**Problem**: Each request gets different IP despite using session ID
+
+**Check format**:
+```python
+# ❌ Wrong format
+proxy = 'http://user:YOUR_API_KEY@proxy.vyx.network:8081?session=abc123'
+
+# ✅ Correct format
+proxy = 'http://user-session-abc123:YOUR_API_KEY@proxy.vyx.network:8081'
+```
+
+**Note**: The session ID can be any string - you can reuse the same session ID.
+
+### Session IP Changed
+
+**Symptoms**: IP changes after some time
+
+**Explanation**: Sticky sessions automatically rotate after 20 minutes. This is normal behavior - simply continue using the same session ID format.
+
+## Library-Specific Issues
+
+### Python Requests
+
+**Issue**: Proxy not working with `requests.Session()`
+
+```python
+# ✅ Correct way to use session with proxies
+import requests
+
+session = requests.Session()
+session.proxies = {
+    'http': 'http://user:YOUR_API_KEY@proxy.vyx.network:8081',
+    'https': 'http://user:YOUR_API_KEY@proxy.vyx.network:8081'
+}
+
+response = session.get('https://example.com')
+```
+
+### Node.js Axios
+
+**Issue**: Proxy not applied to HTTPS requests
+
+```javascript
+// ✅ Correct configuration
+const axios = require('axios');
+const HttpsProxyAgent = require('https-proxy-agent');
+
+const agent = new HttpsProxyAgent('http://user:YOUR_API_KEY@proxy.vyx.network:8081');
+
+axios.get('https://example.com', { httpsAgent: agent })
+  .then(response => console.log(response.data));
+```
+
+### Selenium WebDriver
+
+**Issue**: Proxy with authentication not working
+
+```python
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium_stealth import stealth
+
+# Use proxy extension or authenticated URL
+chrome_options = Options()
+chrome_options.add_argument('--proxy-server=http://proxy.vyx.network:8081')
+
+# Note: Basic auth requires extension or alternative method
+driver = webdriver.Chrome(options=chrome_options)
+```
+
+## IP Detection Issues
+
+### Website Detects Proxy
+
+**Signs**:
+- Captchas appearing frequently
+- Access denied errors
+- Different content than expected
+
+**Solutions**:
+
+1. **Add realistic headers**:
+
+```python
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    'Accept-Language': 'en-US,en;q=0.5',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'DNT': '1',
+    'Connection': 'keep-alive',
+    'Upgrade-Insecure-Requests': '1'
+}
+```
+
+2. **Use browser automation with stealth mode**
+
+### IP Blocked by Target
+
+**Test IP reputation**:
+```bash
+curl -x http://user:YOUR_API_KEY@proxy.vyx.network:8081 https://api.ipify.org
+# Check returned IP on reputation services
+```
+
+**Solutions**:
+- Rotate to get new IP (don't use session parameters)
+- Contact support for fresh IP pool
+
+## Debugging Tools
+
+### Test Proxy Connection
+
+```python
+def test_proxy(proxy_url):
+    """Test if proxy is working"""
+    import requests
+
+    try:
+        # Test connection
+        response = requests.get(
+            'https://api.ipify.org?format=json',
+            proxies={'http': proxy_url, 'https': proxy_url},
+            timeout=10
+        )
+
+        if response.status_code == 200:
+            ip = response.json()['ip']
+            print(f"✅ Proxy working! IP: {ip}")
+            return True
+        else:
+            print(f"❌ Unexpected status: {response.status_code}")
+            return False
+
+    except Exception as e:
+        print(f"❌ Connection failed: {e}")
+        return False
+
+# Usage
+test_proxy('http://user:YOUR_API_KEY@proxy.vyx.network:8081')
+```
+
+### Check Response Headers
+
+```python
+response = requests.get(url, proxies=proxies)
+
+print("Status:", response.status_code)
+print("Headers:", dict(response.headers))
+print("IP:", response.json().get('ip'))  # If response includes IP
+```
+
+### Enable Debug Logging
+
+```python
+import logging
+import requests
+
+# Enable debug logging
+logging.basicConfig(level=logging.DEBUG)
+logging.getLogger('urllib3').setLevel(logging.DEBUG)
+
+response = requests.get(url, proxies=proxies)
+```
+
+## Common Error Messages
+
+| Error | Meaning | Solution |
+|-------|---------|----------|
+| `407 Proxy Authentication Required` | Invalid credentials | Check API key format |
+| `Connection refused` | Can't reach proxy server | Verify proxy address/port |
+| `Proxy error` | General proxy issue | Check account status |
+| `SSL certificate verify failed` | Certificate issue | Update certificates or check target site |
+| `429 Too Many Requests` | Rate limited | Implement delays between requests |
+| `403 Forbidden` | IP blocked | Rotate to new IP address |
+
+## Getting Help
+
+If you're still experiencing issues:
+
+1. **Check System Status**: [status.vyx.network](https://status.vyx.network)
+2. **Contact Support**:
+   - Email: support@vyx.network
+   - Dashboard: [vyx.network/support](https://vyx.network/support)
+   - Include:
+     - Error message
+     - Code sample
+     - Proxy type and location
+     - Timestamp of issue
+
+## Next Steps
+
+- Review [Configuration](/configuration)
+- Check [Examples](/examples)

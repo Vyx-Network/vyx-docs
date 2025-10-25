@@ -1,0 +1,564 @@
+# Code Examples
+
+Practical code examples for integrating VYX Network proxies.
+
+import { Tabs, Callout, Steps } from 'nextra/components'
+
+## Quick Examples
+
+### Simple GET Request
+
+<Tabs items={['Python', 'Node.js', 'cURL', 'PHP', 'Ruby', 'Go']}>
+  <Tabs.Tab>
+    ```python
+    import requests
+
+    proxies = {
+        'http': 'http://user:YOUR_API_KEY@proxy.vyx.network:8081',
+        'https': 'http://user:YOUR_API_KEY@proxy.vyx.network:8081'
+    }
+
+    response = requests.get('https://api.ipify.org?format=json', proxies=proxies)
+    print(response.json())
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ```javascript
+    const axios = require('axios');
+
+    const config = {
+      proxy: {
+        host: 'proxy.vyx.network',
+        port: 8081,
+        auth: {
+          username: 'your-username',
+          password: 'your-password'
+        }
+      }
+    };
+
+    axios.get('https://api.ipify.org?format=json', config)
+      .then(response => console.log(response.data))
+      .catch(error => console.error(error));
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ```bash
+    curl -x http://user:YOUR_API_KEY@proxy.vyx.network:8081 \
+         https://api.ipify.org?format=json
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ```php
+    <?php
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, 'https://api.ipify.org?format=json');
+    curl_setopt($ch, CURLOPT_PROXY, 'proxy.vyx.network:8081');
+    curl_setopt($ch, CURLOPT_PROXYUSERPWD, 'user:YOUR_API_KEY');
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+    $response = curl_exec($ch);
+    curl_close($ch);
+
+    echo $response;
+    ?>
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ```ruby
+    require 'net/http'
+    require 'uri'
+
+    proxy_uri = URI.parse('http://user:YOUR_API_KEY@proxy.vyx.network:8081')
+    uri = URI.parse('https://api.ipify.org?format=json')
+
+    Net::HTTP.start(uri.host, uri.port,
+      proxy_uri.host, proxy_uri.port,
+      proxy_uri.user, proxy_uri.password,
+      use_ssl: uri.scheme == 'https') do |http|
+
+      request = Net::HTTP::Get.new(uri)
+      response = http.request(request)
+      puts response.body
+    end
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ```go
+    package main
+
+    import (
+        "fmt"
+        "io/ioutil"
+        "net/http"
+        "net/url"
+    )
+
+    func main() {
+        proxyURL, _ := url.Parse("http://user:YOUR_API_KEY@proxy.vyx.network:8081")
+        client := &http.Client{
+            Transport: &http.Transport{
+                Proxy: http.ProxyURL(proxyURL),
+            },
+        }
+
+        resp, err := client.Get("https://api.ipify.org?format=json")
+        if err != nil {
+            panic(err)
+        }
+        defer resp.Body.Close()
+
+        body, _ := ioutil.ReadAll(resp.Body)
+        fmt.Println(string(body))
+    }
+    ```
+  </Tabs.Tab>
+</Tabs>
+
+## Web Scraping
+
+### Basic Scraper with Rotating Proxies
+
+<Tabs items={['Python', 'Node.js']}>
+  <Tabs.Tab>
+    ```python
+    import requests
+    from bs4 import BeautifulSoup
+
+    proxies = {
+        'http': 'http://user:YOUR_API_KEY@proxy.vyx.network:8081',
+        'https': 'http://user:YOUR_API_KEY@proxy.vyx.network:8081'
+    }
+
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+    }
+
+    def scrape_page(url):
+        try:
+            response = requests.get(url, proxies=proxies, headers=headers, timeout=30)
+            soup = BeautifulSoup(response.content, 'html.parser')
+
+            # Extract data
+            title = soup.find('h1').text if soup.find('h1') else 'No title'
+
+            return {
+                'url': url,
+                'title': title,
+                'status': response.status_code
+            }
+        except Exception as e:
+            print(f"Error scraping {url}: {e}")
+            return None
+
+    # Scrape multiple pages
+    urls = [
+        'https://example.com/page1',
+        'https://example.com/page2',
+        'https://example.com/page3'
+    ]
+
+    for url in urls:
+        result = scrape_page(url)
+        if result:
+            print(f"Scraped: {result['title']}")
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ```javascript
+    const axios = require('axios');
+    const cheerio = require('cheerio');
+
+    const proxyConfig = {
+      proxy: {
+        host: 'proxy.vyx.network',
+        port: 8081,
+        auth: {
+          username: 'your-username',
+          password: 'your-password'
+        }
+      },
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+      }
+    };
+
+    async function scrapePage(url) {
+      try {
+        const response = await axios.get(url, proxyConfig);
+        const $ = cheerio.load(response.data);
+
+        const title = $('h1').text() || 'No title';
+
+        return {
+          url,
+          title,
+          status: response.status
+        };
+      } catch (error) {
+        console.error(`Error scraping ${url}:`, error.message);
+        return null;
+      }
+    }
+
+    // Scrape multiple pages
+    const urls = [
+      'https://example.com/page1',
+      'https://example.com/page2',
+      'https://example.com/page3'
+    ];
+
+    (async () => {
+      for (const url of urls) {
+        const result = await scrapePage(url);
+        if (result) {
+          console.log(`Scraped: ${result.title}`);
+        }
+      }
+    })();
+    ```
+  </Tabs.Tab>
+</Tabs>
+
+### Scraper with Retry Logic
+
+```python
+import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
+def create_session_with_retries():
+    session = requests.Session()
+
+    retry = Retry(
+        total=3,
+        backoff_factor=1,
+        status_forcelist=[429, 500, 502, 503, 504],
+        allowed_methods=["GET", "POST"]
+    )
+
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount('http://', adapter)
+    session.mount('https://', adapter)
+
+    return session
+
+proxies = {
+    'http': 'http://user:YOUR_API_KEY@proxy.vyx.network:8081',
+    'https': 'http://user:YOUR_API_KEY@proxy.vyx.network:8081'
+}
+
+session = create_session_with_retries()
+response = session.get('https://example.com', proxies=proxies)
+print(response.text)
+```
+
+## Sticky Sessions
+
+### E-commerce Automation with Sticky Session
+
+```python
+import requests
+import time
+
+# Create sticky session
+session_id = "shopping_session"  # Can be any string
+proxies = {
+    'http': f'http://user-session-{session_id}:YOUR_API_KEY@proxy.vyx.network:8081',
+    'https': f'http://user-session-{session_id}:YOUR_API_KEY@proxy.vyx.network:8081'
+}
+
+def add_to_cart(product_id):
+    """Add product to cart using same IP"""
+    response = requests.post(
+        f'https://example-shop.com/cart/add',
+        json={'product_id': product_id},
+        proxies=proxies
+    )
+    return response.json()
+
+def checkout():
+    """Checkout using same IP"""
+    response = requests.post(
+        'https://example-shop.com/checkout',
+        proxies=proxies
+    )
+    return response.json()
+
+# Full shopping flow with consistent IP
+add_to_cart('product-123')
+add_to_cart('product-456')
+result = checkout()
+print(f"Order placed: {result}")
+```
+
+## Country-Specific Requests
+
+### Multi-Country Price Comparison
+
+```python
+import requests
+from concurrent.futures import ThreadPoolExecutor
+
+def get_price_for_country(country_code):
+    """Get product price from specific country"""
+    # Add country code to username
+    proxies = {
+        'http': f'http://user-{country_code}:YOUR_API_KEY@proxy.vyx.network:8081',
+        'https': f'http://user-{country_code}:YOUR_API_KEY@proxy.vyx.network:8081'
+    }
+
+    headers = {
+        'User-Agent': 'Mozilla/5.0'
+    }
+
+    response = requests.get(
+        'https://example-shop.com/product/123',
+        proxies=proxies,
+        headers=headers
+    )
+
+    # Extract price from response
+    price = extract_price(response.text)
+
+    return {
+        'country': country_code,
+        'price': price,
+        'currency': get_currency(country_code)
+    }
+
+def extract_price(html):
+    # Implement your price extraction logic
+    return 99.99
+
+def get_currency(country_code):
+    currencies = {'US': 'USD', 'GB': 'GBP', 'DE': 'EUR', 'JP': 'JPY'}
+    return currencies.get(country_code, 'USD')
+
+# Compare prices across countries
+countries = ['US', 'GB', 'DE', 'JP', 'AU']
+
+with ThreadPoolExecutor(max_workers=5) as executor:
+    results = list(executor.map(get_price_for_country, countries))
+
+for result in results:
+    print(f"{result['country']}: {result['price']} {result['currency']}")
+```
+
+## SOCKS5 Proxy
+
+### Using SOCKS5 for Non-HTTP Traffic
+
+```python
+import socks
+import socket
+import requests
+
+# Configure SOCKS5
+socks.set_default_proxy(
+    socks.SOCKS5,
+    "proxy.vyx.network",
+    1080,
+    username="your-username",
+    password="your-password"
+)
+socket.socket = socks.socksocket
+
+# Now all traffic uses SOCKS5
+response = requests.get('https://api.ipify.org?format=json')
+print(response.json())
+```
+
+### SSH over SOCKS5
+
+```bash
+# Configure SSH to use SOCKS5 proxy
+ssh -o ProxyCommand="nc -X 5 -x proxy.vyx.network:1080 %h %p" user@remote-server
+```
+
+## Parallel Scraping
+
+### Concurrent Requests with Thread Pool
+
+```python
+import requests
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+proxies = {
+    'http': 'http://user:YOUR_API_KEY@proxy.vyx.network:8081',
+    'https': 'http://user:YOUR_API_KEY@proxy.vyx.network:8081'
+}
+
+def fetch_url(url):
+    """Fetch single URL"""
+    try:
+        response = requests.get(url, proxies=proxies, timeout=30)
+        return {
+            'url': url,
+            'status': response.status_code,
+            'length': len(response.content)
+        }
+    except Exception as e:
+        return {
+            'url': url,
+            'error': str(e)
+        }
+
+# URLs to scrape
+urls = [f'https://example.com/page{i}' for i in range(1, 101)]
+
+# Parallel execution
+results = []
+with ThreadPoolExecutor(max_workers=10) as executor:
+    futures = {executor.submit(fetch_url, url): url for url in urls}
+
+    for future in as_completed(futures):
+        result = future.result()
+        results.append(result)
+        print(f"Completed: {result['url']}")
+
+print(f"Total pages scraped: {len(results)}")
+```
+
+## API Integration
+
+### Using VYX API with Proxies
+
+```python
+import requests
+
+# Get API key from environment
+API_KEY = 'your-api-key'
+
+def get_proxy_list(country='US', proxy_type='residential'):
+    """Get available proxies from VYX API"""
+    headers = {'Authorization': f'Bearer {API_KEY}'}
+
+    response = requests.get(
+        f'https://api.vyx.network/v1/proxies',
+        headers=headers,
+        params={'country': country, 'type': proxy_type, 'limit': 10}
+    )
+
+    return response.json()['proxies']
+
+def create_sticky_session(country='US', duration=30):
+    """Create a sticky session via API"""
+    headers = {
+        'Authorization': f'Bearer {API_KEY}',
+        'Content-Type': 'application/json'
+    }
+
+    data = {
+        'country': country,
+        'duration_minutes': duration,
+        'type': 'residential'
+    }
+
+    response = requests.post(
+        'https://api.vyx.network/v1/sessions',
+        headers=headers,
+        json=data
+    )
+
+    return response.json()
+
+# Get proxies and create session
+proxies = get_proxy_list(country='US')
+print(f"Available proxies: {len(proxies)}")
+
+session = create_sticky_session(country='GB', duration=30)
+print(f"Session created: {session['session_id']}")
+print(f"Proxy URL: {session['proxy']}")
+```
+
+## Error Handling
+
+### Robust Error Handling
+
+```python
+import requests
+from requests.exceptions import ProxyError, Timeout, RequestException
+import time
+
+def fetch_with_error_handling(url, max_retries=3):
+    """Fetch URL with comprehensive error handling"""
+    proxies = {
+        'http': 'http://user:YOUR_API_KEY@proxy.vyx.network:8081',
+        'https': 'http://user:YOUR_API_KEY@proxy.vyx.network:8081'
+    }
+
+    for attempt in range(max_retries):
+        try:
+            response = requests.get(
+                url,
+                proxies=proxies,
+                timeout=30,
+                headers={'User-Agent': 'Mozilla/5.0'}
+            )
+            response.raise_for_status()
+            return response
+
+        except ProxyError:
+            print(f"Proxy error on attempt {attempt + 1}")
+            time.sleep(2 ** attempt)  # Exponential backoff
+
+        except Timeout:
+            print(f"Timeout on attempt {attempt + 1}")
+            time.sleep(1)
+
+        except RequestException as e:
+            print(f"Request error: {e}")
+            if attempt == max_retries - 1:
+                raise
+            time.sleep(2)
+
+    raise Exception(f"Failed after {max_retries} attempts")
+
+# Usage
+try:
+    response = fetch_with_error_handling('https://example.com')
+    print(f"Success: {response.status_code}")
+except Exception as e:
+    print(f"Failed: {e}")
+```
+
+## Selenium with Proxies
+
+### Browser Automation with VYX Proxies
+
+```python
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+
+def create_driver_with_proxy():
+    """Create Chrome driver with proxy configuration"""
+    chrome_options = Options()
+
+    # Configure proxy
+    proxy = "proxy.vyx.network:8081"
+    chrome_options.add_argument(f'--proxy-server=http://{proxy}')
+
+    # Additional options
+    chrome_options.add_argument('--headless')
+    chrome_options.add_argument('--no-sandbox')
+    chrome_options.add_argument('--disable-dev-shm-usage')
+
+    driver = webdriver.Chrome(options=chrome_options)
+    return driver
+
+# Use the driver
+driver = create_driver_with_proxy()
+driver.get('https://api.ipify.org')
+print(f"IP Address: {driver.page_source}")
+driver.quit()
+```
+
+<Callout type="info">
+For Selenium with authentication, consider using browser extensions or authenticated proxy URLs.
+</Callout>
+
+## Next Steps
+
+- Review [Configuration](/configuration) options
+- Check [Troubleshooting](/troubleshooting) guide

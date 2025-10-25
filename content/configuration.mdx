@@ -1,0 +1,287 @@
+# Configuration
+
+Configure VYX Network proxies to match your specific requirements.
+
+import { Tabs, Callout } from 'nextra/components'
+
+## Proxy Endpoints
+
+VYX Network provides residential proxy endpoints:
+
+| Endpoint | Protocol | Port | Use Case |
+|----------|----------|------|----------|
+| `proxy.vyx.network` | HTTP/HTTPS | 8081 | General web browsing |
+| `proxy.vyx.network` | SOCKS5 | 1080 | Advanced applications |
+
+## Authentication Methods
+
+### Basic Authentication
+
+Use username and password in the proxy URL:
+
+```
+http://user:YOUR_API_KEY@proxy.vyx.network:8081
+```
+
+## Proxy Parameters
+
+Control proxy behavior by adding parameters to the username field (before the colon).
+
+### Parameter Format
+
+Parameters are comma-separated in the username:
+```
+http://username-param1,param2:YOUR_API_KEY@proxy.vyx.network:8081
+```
+
+### Country Selection
+
+Request proxies from specific countries by adding the country code to the username:
+
+<Tabs items={['Country Code Only', 'Explicit Format']}>
+  <Tabs.Tab>
+    ```bash
+    # Short format - just add country code
+    curl -x http://user-US:YOUR_API_KEY@proxy.vyx.network:8081 \
+         https://api.ipify.org
+    ```
+
+    ```python
+    import requests
+
+    # Get US residential IP
+    proxies = {
+        'http': 'http://user-US:YOUR_API_KEY@proxy.vyx.network:8081'
+    }
+
+    response = requests.get('https://api.ipify.org', proxies=proxies)
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ```bash
+    # Explicit format with country=XX
+    curl -x http://user-country=US:YOUR_API_KEY@proxy.vyx.network:8081 \
+         https://api.ipify.org
+    ```
+
+    ```python
+    import requests
+
+    # Explicit country parameter
+    proxies = {
+        'http': 'http://user-country=GB:YOUR_API_KEY@proxy.vyx.network:8081'
+    }
+
+    response = requests.get('https://api.ipify.org', proxies=proxies)
+    ```
+  </Tabs.Tab>
+</Tabs>
+
+**Supported country codes**: All ISO 3166-1 alpha-2 codes (US, GB, DE, FR, CA, JP, AU, BR, IT, ES, NL, IN, RU, CN, and 200+ more).
+
+### Session Management
+
+#### Rotating Proxies
+
+Get a new IP for each request (default):
+
+```python
+import requests
+
+proxies = {
+    'http': 'http://user:YOUR_API_KEY@proxy.vyx.network:8081'
+}
+
+# Each request gets a different IP
+for i in range(5):
+    response = requests.get('https://api.ipify.org', proxies=proxies)
+    print(f"Request {i+1}: {response.text}")
+```
+
+#### Sticky Sessions
+
+Maintain the same IP for multiple requests by adding a session parameter:
+
+```python
+import requests
+
+# Add sessionId parameter to keep same IP
+proxies = {
+    'http': 'http://user-sessionId=abc123:YOUR_API_KEY@proxy.vyx.network:8081'
+}
+
+# All requests use the same IP
+for i in range(5):
+    response = requests.get('https://api.ipify.org', proxies=proxies)
+    print(f"Request {i+1}: {response.text}")
+```
+
+**Alternative session formats** (any key containing "sess" works):
+```python
+# All these work the same:
+'http://user-session=abc123:YOUR_API_KEY@proxy.vyx.network:8081'
+'http://user-sess=abc123:YOUR_API_KEY@proxy.vyx.network:8081'
+'http://user-sessionId=abc123:YOUR_API_KEY@proxy.vyx.network:8081'
+```
+
+<Callout type="info">
+Session format: `user-sessionId={your_session_id}:YOUR_API_KEY` where session ID can be any string.
+</Callout>
+
+<Callout type="warning">
+Sticky sessions last up to 20 minutes before automatically rotating to a new IP.
+</Callout>
+
+### Combining Parameters
+
+You can combine multiple parameters with commas:
+
+```python
+import requests
+
+# US residential IP with sticky session
+proxies = {
+    'http': 'http://user-US,sessionId=shop123:YOUR_API_KEY@proxy.vyx.network:8081'
+}
+
+response = requests.get('https://example.com', proxies=proxies)
+```
+
+**More examples**:
+```bash
+# GB residential IP with session
+user-GB,session=abc:YOUR_API_KEY
+
+# US IP using explicit format
+user-country=US,sessionId=xyz:YOUR_API_KEY
+
+# Short format
+user-US,session=123:YOUR_API_KEY
+```
+
+### Timeout Configuration
+
+Set request timeout to avoid hanging connections:
+
+```python
+import requests
+
+proxies = {'http': 'http://user:YOUR_API_KEY@proxy.vyx.network:8081'}
+timeout = 30  # seconds
+
+try:
+    response = requests.get('https://example.com', proxies=proxies, timeout=timeout)
+except requests.Timeout:
+    print("Request timed out")
+```
+
+### Custom Headers
+
+Pass custom headers through the proxy:
+
+```javascript
+const axios = require('axios');
+
+const config = {
+  proxy: {
+    host: 'proxy.vyx.network',
+    port: 8081,
+    auth: { username: "user", password: "YOUR_API_KEY" }
+  },
+  headers: {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+    'Accept-Language': 'en-US,en;q=0.9',
+    'X-VYX-Country': 'US'
+  }
+};
+
+axios.get('https://example.com', config);
+```
+
+## Advanced Configuration
+
+### Retry Logic
+
+Implement automatic retries for failed requests:
+
+```python
+import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
+
+session = requests.Session()
+retry = Retry(total=3, backoff_factor=1, status_forcelist=[500, 502, 503, 504])
+adapter = HTTPAdapter(max_retries=retry)
+session.mount('http://', adapter)
+session.mount('https://', adapter)
+
+proxies = {'http': 'http://user:YOUR_API_KEY@proxy.vyx.network:8081'}
+response = session.get('https://example.com', proxies=proxies)
+```
+
+### Connection Pooling
+
+Reuse connections for better performance:
+
+```python
+import requests
+from requests.adapters import HTTPAdapter
+
+session = requests.Session()
+adapter = HTTPAdapter(pool_connections=10, pool_maxsize=20)
+session.mount('http://', adapter)
+session.mount('https://', adapter)
+
+proxies = {'http': 'http://user:YOUR_API_KEY@proxy.vyx.network:8081'}
+response = session.get('https://example.com', proxies=proxies)
+```
+
+### SSL Verification
+
+For development, you can disable SSL verification (not recommended for production):
+
+```python
+import requests
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
+proxies = {'http': 'http://user:YOUR_API_KEY@proxy.vyx.network:8081'}
+response = requests.get('https://example.com', proxies=proxies, verify=False)
+```
+
+<Callout type="warning">
+Disabling SSL verification in production is a security risk. Only use this in development environments.
+</Callout>
+
+## Environment Variables
+
+Store credentials in environment variables for security:
+
+```bash
+export VYX_USERNAME="your-username"
+export VYX_PASSWORD="your-password"
+export VYX_PROXY="proxy.vyx.network:8081"
+```
+
+Use in your code:
+
+```python
+import os
+import requests
+
+username = os.getenv('VYX_USERNAME')
+password = os.getenv('VYX_PASSWORD')
+proxy_url = os.getenv('VYX_PROXY')
+
+proxies = {
+    'http': f'http://{username}:{password}@{proxy_url}',
+    'https': f'http://{username}:{password}@{proxy_url}'
+}
+
+response = requests.get('https://example.com', proxies=proxies)
+```
+
+## Next Steps
+
+- Learn about [Proxy Types](/proxy-types)
+- View [Code Examples](/examples)

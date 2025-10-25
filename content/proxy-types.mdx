@@ -1,0 +1,393 @@
+# Proxy Types
+
+Vyx Network offers high-quality residential proxies for maximum anonymity and reliability.
+
+import { Callout, Tabs } from 'nextra/components'
+
+## Overview
+
+Vyx Network specializes in residential proxies - real IP addresses from ISPs assigned to homeowners.
+
+| Feature | Residential Proxies |
+|---------|---------------------|
+| Speed | ⚡⚡ Fast |
+| Anonymity | ⭐⭐⭐ Highest |
+| Detection Rate | Very Low |
+| Success Rate | 95-99% |
+| Best For | Web scraping, social media, e-commerce |
+
+## Residential Proxies
+
+Real IP addresses from ISPs assigned to homeowners, providing the highest level of anonymity.
+
+### Features
+
+- **High Anonymity**: Appear as regular residential users
+- **Low Detection**: Rarely blocked by websites
+- **Global Coverage**: IPs from 195+ countries
+- **Rotating or Sticky**: Choose your session management
+- **High Success Rate**: 95-99% success rate on most websites
+
+### Use Cases
+
+#### Web Scraping
+Collect data without getting blocked by anti-bot systems:
+- E-commerce price monitoring
+- Product availability tracking
+- Market research and competitor analysis
+- Real estate data collection
+
+#### Social Media Management
+Safely manage multiple accounts:
+- Instagram, Facebook, Twitter automation
+- Content posting and engagement
+- Analytics and monitoring
+- Account creation and management
+
+#### E-commerce & Sneaker Bots
+Purchase limited-edition items:
+- Sneaker releases (Nike, Adidas, Supreme)
+- Limited product drops
+- Multi-account checkout
+- Bypass purchase limits
+
+#### Ad Verification
+Verify ad placements across locations:
+- Check ads in different regions
+- Verify targeting accuracy
+- Monitor competitor ads
+- Prevent ad fraud
+
+#### SEO & Market Research
+Monitor search rankings and pricing:
+- Track keyword rankings globally
+- Monitor competitor prices
+- Collect accurate market data
+- A/B testing across regions
+
+### Configuration
+
+Basic usage with rotating IPs (new IP each request):
+
+<Tabs items={['Python', 'Node.js', 'cURL', 'PHP']}>
+  <Tabs.Tab>
+    ```python
+    import requests
+
+    # Rotating residential proxies (new IP each request)
+    proxies = {
+        'http': 'http://user:YOUR_API_KEY@proxy.vyx.network:8081',
+        'https': 'http://user:YOUR_API_KEY@proxy.vyx.network:8081'
+    }
+
+    response = requests.get('https://example.com', proxies=proxies)
+    print(response.text)
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ```javascript
+    const axios = require('axios');
+
+    const config = {
+      proxy: {
+        host: 'proxy.vyx.network',
+        port: 8081,
+        auth: {
+          username: 'user',
+          password: 'YOUR_API_KEY'
+        }
+      }
+    };
+
+    axios.get('https://example.com', config)
+      .then(response => console.log(response.data))
+      .catch(error => console.error(error));
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ```bash
+    # HTTP proxy
+    curl -x http://user:YOUR_API_KEY@proxy.vyx.network:8081 https://example.com
+
+    # SOCKS5 proxy
+    curl --socks5 user:YOUR_API_KEY@proxy.vyx.network:1080 https://example.com
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ```php
+    <?php
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, 'https://example.com');
+    curl_setopt($ch, CURLOPT_PROXY, 'proxy.vyx.network:8081');
+    curl_setopt($ch, CURLOPT_PROXYUSERPWD, 'user:YOUR_API_KEY');
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+    $response = curl_exec($ch);
+    curl_close($ch);
+
+    echo $response;
+    ?>
+    ```
+  </Tabs.Tab>
+</Tabs>
+
+## Session Management
+
+### Rotating Proxies (Default)
+
+Get a new IP address for each request - ideal for large-scale scraping:
+
+```python
+import requests
+
+proxies = {
+    'http': 'http://user:YOUR_API_KEY@proxy.vyx.network:8081',
+    'https': 'http://user:YOUR_API_KEY@proxy.vyx.network:8081'
+}
+
+# Each request gets a different IP
+for i in range(100):
+    response = requests.get('https://api.ipify.org', proxies=proxies)
+    print(f"Request {i+1}: IP = {response.text}")
+```
+
+**Best for**:
+- Large-scale web scraping
+- Price monitoring across many sites
+- Data collection from multiple sources
+- High-volume requests
+
+### Sticky Sessions
+
+Maintain the same IP address for multiple requests - ideal for stateful operations:
+
+```python
+import requests
+
+# Create sticky session with unique ID
+session_id = "shopping_session_123"
+proxies = {
+    'http': f'http://user-session-{session_id}:YOUR_API_KEY@proxy.vyx.network:8081',
+    'https': f'http://user-session-{session_id}:YOUR_API_KEY@proxy.vyx.network:8081'
+}
+
+# All requests use the same IP
+login = requests.post('https://example.com/login', proxies=proxies, data={'user': 'me'})
+cart = requests.post('https://example.com/cart/add', proxies=proxies, data={'item': '123'})
+checkout = requests.post('https://example.com/checkout', proxies=proxies)
+
+print("All requests used the same IP address")
+```
+
+**Best for**:
+- E-commerce checkout flows
+- Account login and session management
+- Multi-step form submissions
+- Maintaining cookies and sessions
+
+<Callout type="info">
+Session format: `user-session-{sessionId}:YOUR_API_KEY` where `sessionId` can be any string you choose.
+</Callout>
+
+<Callout type="warning">
+Sticky sessions last a maximum of 20 minutes. The same session ID can be reused - the system automatically manages session rotation.
+</Callout>
+
+## Country Selection
+
+Request proxies from specific countries by adding the country code to the username:
+
+```python
+import requests
+
+# Get US residential IP
+proxies = {
+    'http': 'http://user-US:YOUR_API_KEY@proxy.vyx.network:8081'
+}
+
+response = requests.get('https://example.com', proxies=proxies)
+```
+
+**Alternative format**:
+```python
+# Explicit country parameter
+proxies = {
+    'http': 'http://user-country=GB:YOUR_API_KEY@proxy.vyx.network:8081'
+}
+```
+
+**Combine with session**:
+```python
+# US IP with sticky session
+proxies = {
+    'http': 'http://user-US,sessionId=mysession:YOUR_API_KEY@proxy.vyx.network:8081'
+}
+```
+
+**Available countries**: All ISO 3166-1 alpha-2 codes - US, GB, DE, FR, CA, JP, AU, BR, IT, ES, NL, IN, RU, CN, and 200+ more.
+
+## Protocol Support
+
+Vyx Network residential proxies support both HTTP/HTTPS and SOCKS5:
+
+### HTTP/HTTPS (Port 8081)
+
+Standard web traffic - easiest to use:
+
+```bash
+http://user:YOUR_API_KEY@proxy.vyx.network:8081
+```
+
+**Use for**:
+- Web scraping
+- API requests
+- Browser automation
+- Most applications
+
+### SOCKS5 (Port 1080)
+
+Advanced protocol for any TCP/UDP traffic:
+
+```bash
+socks5://user:YOUR_API_KEY@proxy.vyx.network:1080
+```
+
+**Advantages**:
+- Supports non-HTTP protocols (FTP, SMTP, etc.)
+- Better performance for some applications
+- UDP traffic support
+- More flexible authentication
+
+**SOCKS5 Example**:
+
+```python
+import socks
+import socket
+import requests
+
+# Configure SOCKS5
+socks.set_default_proxy(
+    socks.SOCKS5,
+    "proxy.vyx.network",
+    1080,
+    username="user",
+    password="YOUR_API_KEY"
+)
+socket.socket = socks.socksocket
+
+# Now all traffic uses SOCKS5
+response = requests.get('https://api.ipify.org?format=json')
+print(response.json())
+```
+
+## Performance Tips
+
+### Optimize Request Speed
+
+1. **Use connection pooling**:
+```python
+import requests
+from requests.adapters import HTTPAdapter
+
+session = requests.Session()
+adapter = HTTPAdapter(pool_connections=10, pool_maxsize=20)
+session.mount('http://', adapter)
+session.mount('https://', adapter)
+
+proxies = {'http': 'http://user:YOUR_API_KEY@proxy.vyx.network:8081'}
+response = session.get('https://example.com', proxies=proxies)
+```
+
+2. **Set appropriate timeouts**:
+```python
+response = requests.get(
+    url,
+    proxies=proxies,
+    timeout=(5, 30)  # (connect timeout, read timeout)
+)
+```
+
+3. **Implement retry logic**:
+```python
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
+
+session = requests.Session()
+retry = Retry(total=3, backoff_factor=1, status_forcelist=[500, 502, 503, 504])
+adapter = HTTPAdapter(max_retries=retry)
+session.mount('http://', adapter)
+session.mount('https://', adapter)
+```
+
+### Maximize Success Rate
+
+1. **Use realistic headers**:
+```python
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    'Accept-Language': 'en-US,en;q=0.5',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'DNT': '1',
+    'Connection': 'keep-alive',
+    'Upgrade-Insecure-Requests': '1'
+}
+```
+
+2. **Add delays between requests**:
+```python
+import time
+
+for url in urls:
+    response = requests.get(url, proxies=proxies)
+    time.sleep(2)  # 2 second delay
+```
+
+3. **Rotate user agents**:
+```python
+import random
+
+user_agents = [
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
+    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36'
+]
+
+headers = {'User-Agent': random.choice(user_agents)}
+response = requests.get(url, proxies=proxies, headers=headers)
+```
+
+## Best Practices
+
+### Do's ✅
+
+- Use sticky sessions for multi-step workflows
+- Implement proper error handling and retries
+- Add realistic headers to your requests
+- Respect rate limits and add delays
+- Monitor your usage in the dashboard
+- Use country targeting when needed
+
+### Don'ts ❌
+
+- Don't share your API key publicly
+- Don't make requests too quickly (avoid rate limits)
+- Don't ignore error responses
+- Don't use same session ID across different workflows
+- Don't scrape sites that explicitly prohibit it
+
+## Pricing
+
+Residential proxies are priced based on bandwidth usage:
+
+- **Pay-as-you-go**: $5 per GB
+- **Monthly plans**: Volume discounts available
+- **Enterprise**: Custom pricing for high-volume users
+
+Check your [dashboard](https://vyx.network/pricing) for current pricing and plan details.
+
+## Next Steps
+
+- Learn about [Configuration Options](/configuration)
+- View [Code Examples](/examples)
+- Check [Troubleshooting](/troubleshooting) guide
