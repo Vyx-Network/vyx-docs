@@ -1,0 +1,33 @@
+services:
+  # Vyx Docs (Nextra)
+  docs:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vyx_docs
+    restart: unless-stopped
+    # Resource limits for Docs site
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'      # Max 0.5 CPUs
+          memory: 512M     # Max 512MB RAM
+        reservations:
+          cpus: '0.1'      # Guaranteed 0.1 CPU
+          memory: 128M     # Guaranteed 128MB RAM
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+    ports:
+      - "127.0.0.1:3001:3001"  # Publish to localhost only for nginx access
+    networks:
+      - vyx_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+networks:
+  vyx_network:
+    driver: bridge

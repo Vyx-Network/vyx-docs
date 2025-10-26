@@ -7,4 +7,5 @@ const withNextra = nextra({
 
 export default withNextra({
     // Next.js config
+    output: 'standalone',
 })
