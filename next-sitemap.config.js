@@ -3,7 +3,7 @@ module.exports = {
   siteUrl: process.env.SITE_URL || 'https://docs.vyx.network',
   generateRobotsTxt: true,
   generateIndexSitemap: true,
-  exclude: ['/server-sitemap.xml', '/api/*'],
+  exclude: ['/api/*'],
   robotsTxtOptions: {
     policies: [
       {
@@ -19,9 +19,6 @@ module.exports = {
         userAgent: 'CCBot',
         disallow: '/' // Block Common Crawl
       }
-    ],
-    additionalSitemaps: [
-      'https://docs.vyx.network/server-sitemap.xml'
     ]
   },
   transform: async (config, path) => {

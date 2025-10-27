@@ -18,4 +18,3 @@ Host: https://docs.vyx.network
 
 # Sitemaps
 Sitemap: https://docs.vyx.network/sitemap.xml
-Sitemap: https://docs.vyx.network/server-sitemap.xml
