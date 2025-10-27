@@ -5,11 +5,13 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "postbuild": "pagefind --site .next/server/app --output-path public/_pagefind",
+    "postbuild": "next-sitemap && pagefind --site .next/server/app --output-path public/_pagefind",
+    "sitemap": "next-sitemap",
     "start": "next start"
   },
   "dependencies": {
     "next": "16.0.0",
+    "next-sitemap": "^4.2.3",
     "nextra": "^4.6.0",
     "nextra-theme-docs": "^4.6.0",
     "react": "^19.2.0",

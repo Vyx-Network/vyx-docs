@@ -1,0 +1,21 @@
+# *
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /_next/
+Disallow: /admin/
+
+# GPTBot
+User-agent: GPTBot
+Disallow: /
+
+# CCBot
+User-agent: CCBot
+Disallow: /
+
+# Host
+Host: https://docs.vyx.network
+
+# Sitemaps
+Sitemap: https://docs.vyx.network/sitemap.xml
+Sitemap: https://docs.vyx.network/server-sitemap.xml
